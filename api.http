@@ -17,3 +17,6 @@ POST http://localhost:3000/pokemon
     "quick attack"
   ]
 }
+
+### Usando express
+GET http://localhost:3000/
