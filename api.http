@@ -1,0 +1,19 @@
+### Para separar peticiones
+
+### Para recuperar la información de un pokemon ditto
+GET http://localhost:3000/ditto
+
+### Para crea un Pokemon
+POST http://localhost:3000/pokemon
+
+{
+  "name": "Pikachu",
+  "type": "electric",
+  "level": 1,
+  "moves": [
+    "thunderbolt",
+    "thunder",
+    "thunder wave",
+    "quick attack"
+  ]
+}
