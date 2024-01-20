@@ -2,7 +2,6 @@ const http = require('node:http')
 
 // import JSON file
 const dittoJSON = require('./pokemon/ditto.json')
-const { log } = require('node:console')
 
 const desiredPort = process.env.PORT ?? 3000
 
