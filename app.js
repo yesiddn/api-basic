@@ -5,13 +5,15 @@
 const express = require('express') // npm install express -E para que se instale la versión exacta que se tiene en package.json
 const crypto = require('node:crypto') // node:crypto es un módulo nativo de node.js para encriptar datos
 const movies = require('./movies.json')
-const { validateMovie } = require('./schemas/movies')
+const { validateMovie, validatePartialMovie } = require('./schemas/movies')
 
 const app = express()
 app.use(express.json())
 app.disable('x-powered-by')
 
 const PORT = process.env.PORT ?? 3000
+
+// Idempotencia -> Propiedad de realizar una acción determinada varias veces y aún así conseguir el mismo resultado que se obtendría si se realizara una sola vez
 
 // todas las peliculas y tambien por genero
 app.get('/movies', (req, res) => {
@@ -59,7 +61,31 @@ app.post('/movies', (req, res) => {
   movies.push(newMovie)
 
   res.status(201).json(newMovie)
-})
+}) // no es idempotente porque cada vez que se hace un post se crea un nuevo recurso
+
+app.patch('/movies/:id', (req, res) => {
+  const result = validatePartialMovie(req.body)
+
+  if (!result.success) {
+    return res.status(404).json({ errors: JSON.parse(result.error.message) })
+  }
+
+  const { id } = req.params
+  const movieIndex = movies.findIndex(movie => movie.id === id)
+
+  if (movieIndex === -1) return res.status(404).json({ message: 'Movie not found' })
+
+  const updatedMovie = {
+    ...movies[movieIndex],
+    ...result.data
+  }
+
+  movies[movieIndex] = updatedMovie
+
+  return res.json(updatedMovie)
+}) // Normalmente sí lo podría ser, pero depende, por ejemplo si se tiene un campo updatedAt, entonces no sería idempotente (pasaria lo mismo con PUT pero PUT no se usa para actualizar parcialmente, sino para actualizar todo el recurso)
+
+// PUT -> Si es idempotente porque el resultado es el mismo si se hace una o varias veces
 
 app.listen(PORT, () => {
   console.log(`Server listening on port http://localhost:${PORT}`)

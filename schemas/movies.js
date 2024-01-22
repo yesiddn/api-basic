@@ -27,4 +27,8 @@ function validateMovie (object) {
   return movieSchema.safeParse(object) // retorna un objeto con un atributo success que es un booleano
 }
 
-module.exports = { validateMovie }
+function validatePartialMovie (object) { // shape, input, object -> hasta que no se sepa que es un movie no se llama movie
+  return movieSchema.partial().safeParse(object) // partial() -> hace que todos los atributos sean opcionales y se validan solo los que lleguen en el objeto
+}
+
+module.exports = { validateMovie, validatePartialMovie }

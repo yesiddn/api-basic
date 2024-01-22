@@ -46,3 +46,11 @@ Content-Type: application/json
     "Drama"
   ]
 }
+
+### Actualizar una pelicula (una parte, no todo el recurso)
+PATCH http://localhost:3000/movies/dcdd0fad-a94c-4810-8acc-5f108d3b18c3
+Content-Type: application/json
+
+{
+  "year": 1976
+}
