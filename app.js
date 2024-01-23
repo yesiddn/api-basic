@@ -17,6 +17,11 @@ const ACCEPTED_ORIGINS = ['http://localhost:1234', 'https://localhost:8080', 'ht
 
 // Idempotencia -> Propiedad de realizar una acción determinada varias veces y aún así conseguir el mismo resultado que se obtendría si se realizara una sola vez
 
+// metodos normales: GET, HEAD, POST
+// metodos complejos: PUT, PATCH, DELETE -> requieren una peticion especial OPTIONS para saber si se puede hacer la peticion o no
+
+// CORS PRE-FLIGHT (esta en todos los metodos complejos)
+
 // todas las peliculas y tambien por genero
 app.get('/movies', (req, res) => {
   const origin = req.headers.origin // el origen de la peticion -> NO se envia el origin cuando se hace la peticion desde el mismo origen
@@ -25,7 +30,7 @@ app.get('/movies', (req, res) => {
   // res.header('Access-Control-Allow-Origin', '*') // solucion de CORS para un solo endpoint -> todos los origenes que no sean nuestro propio origen estan permitidos
 
   if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
-    res.header('Access-Control-Allow-Origin', origin ?? '*')
+    res.header('Access-Control-Allow-Origin', origin)
   }
 
   const { genre } = req.query // un query string es una cadena de texto que se envía en la url para filtrar datos
@@ -97,6 +102,34 @@ app.patch('/movies/:id', (req, res) => {
 }) // Normalmente sí lo podría ser, pero depende, por ejemplo si se tiene un campo updatedAt, entonces no sería idempotente (pasaria lo mismo con PUT pero PUT no se usa para actualizar parcialmente, sino para actualizar todo el recurso)
 
 // PUT -> Si es idempotente porque el resultado es el mismo si se hace una o varias veces
+
+app.delete('/movies/:id', (req, res) => {
+  const origin = req.headers.origin
+  if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
+    res.header('Access-Control-Allow-Origin', origin)
+  } // seguira dando error de CORS porque el metodo options no esta implementado
+
+  const { id } = req.params
+  const movieIndex = movies.findIndex(movie => movie.id === id)
+
+  if (movieIndex === -1) return res.status(404).json({ message: 'Movie not found' })
+
+  movies.splice(movieIndex, 1)
+
+  return res.status(204).json({ message: 'Movie deleted' })
+})
+
+app.options('/movies:id', (req, res) => {
+  const origin = req.headers.origin
+  if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
+    res.header('Access-Control-Allow-Origin', origin)
+  }
+
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  // res.header('Access-Control-Allow-Headers', 'Content-Type')
+
+  res.status(200).send()
+})
 
 app.listen(PORT, () => {
   console.log(`Server listening on port http://localhost:${PORT}`)
