@@ -13,7 +13,11 @@ app.use(express.json())
 // app.use(cors()) // WARNING -> este middleware pone un * a todos los endpoints -> no es recomendable usarlo asi
 app.use(cors({
   origin: (origin, callback) => {
-    const ACCEPTED_ORIGINS = ['http://localhost:1234', 'https://localhost:8080', 'https://movies.com']
+    const ACCEPTED_ORIGINS = [
+      'http://localhost:8080',
+      'http://localhost:1234',
+      'https://movies.com'
+    ]
 
     if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
       return callback(null, true)
@@ -26,7 +30,7 @@ app.disable('x-powered-by')
 
 const PORT = process.env.PORT ?? 3000
 
-// const ACCEPTED_ORIGINS = ['http://localhost:1234', 'https://localhost:8080', 'https://movies.com']
+// const ACCEPTED_ORIGINS = ['http://localhost:1234', 'http://localhost:8080', 'https://movies.com']
 
 // Idempotencia -> Propiedad de realizar una acción determinada varias veces y aún así conseguir el mismo resultado que se obtendría si se realizara una sola vez
 
