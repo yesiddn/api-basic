@@ -13,10 +13,21 @@ app.disable('x-powered-by')
 
 const PORT = process.env.PORT ?? 3000
 
+const ACCEPTED_ORIGINS = ['http://localhost:1234', 'https://localhost:8080', 'https://movies.com']
+
 // Idempotencia -> Propiedad de realizar una acción determinada varias veces y aún así conseguir el mismo resultado que se obtendría si se realizara una sola vez
 
 // todas las peliculas y tambien por genero
 app.get('/movies', (req, res) => {
+  const origin = req.headers.origin // el origen de la peticion -> NO se envia el origin cuando se hace la peticion desde el mismo origen
+
+  // res.header('Access-Control-Allow-Origin', 'http://localhost:8080') // solo el origen que se le indique esta permitido (en este caso localhost:8080
+  // res.header('Access-Control-Allow-Origin', '*') // solucion de CORS para un solo endpoint -> todos los origenes que no sean nuestro propio origen estan permitidos
+
+  if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
+    res.header('Access-Control-Allow-Origin', origin ?? '*')
+  }
+
   const { genre } = req.query // un query string es una cadena de texto que se envía en la url para filtrar datos
 
   if (genre) {
