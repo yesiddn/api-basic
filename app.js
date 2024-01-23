@@ -4,16 +4,29 @@
 
 const express = require('express') // npm install express -E para que se instale la versión exacta que se tiene en package.json
 const crypto = require('node:crypto') // node:crypto es un módulo nativo de node.js para encriptar datos
+const cors = require('cors') // npm install cors -E
 const movies = require('./movies.json')
 const { validateMovie, validatePartialMovie } = require('./schemas/movies')
 
 const app = express()
 app.use(express.json())
+// app.use(cors()) // WARNING -> este middleware pone un * a todos los endpoints -> no es recomendable usarlo asi
+app.use(cors({
+  origin: (origin, callback) => {
+    const ACCEPTED_ORIGINS = ['http://localhost:1234', 'https://localhost:8080', 'https://movies.com']
+
+    if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
+      return callback(null, true)
+    } else {
+      return callback(new Error('Not allowed by CORS'))
+    }
+  }
+})) // se puede pasar un objeto con las opciones que se quieran
 app.disable('x-powered-by')
 
 const PORT = process.env.PORT ?? 3000
 
-const ACCEPTED_ORIGINS = ['http://localhost:1234', 'https://localhost:8080', 'https://movies.com']
+// const ACCEPTED_ORIGINS = ['http://localhost:1234', 'https://localhost:8080', 'https://movies.com']
 
 // Idempotencia -> Propiedad de realizar una acción determinada varias veces y aún así conseguir el mismo resultado que se obtendría si se realizara una sola vez
 
@@ -24,14 +37,14 @@ const ACCEPTED_ORIGINS = ['http://localhost:1234', 'https://localhost:8080', 'ht
 
 // todas las peliculas y tambien por genero
 app.get('/movies', (req, res) => {
-  const origin = req.headers.origin // el origen de la peticion -> NO se envia el origin cuando se hace la peticion desde el mismo origen
+  // const origin = req.headers.origin // el origen de la peticion -> NO se envia el origin cuando se hace la peticion desde el mismo origen
 
   // res.header('Access-Control-Allow-Origin', 'http://localhost:8080') // solo el origen que se le indique esta permitido (en este caso localhost:8080
   // res.header('Access-Control-Allow-Origin', '*') // solucion de CORS para un solo endpoint -> todos los origenes que no sean nuestro propio origen estan permitidos
 
-  if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
-    res.header('Access-Control-Allow-Origin', origin)
-  }
+  // if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
+  //   res.header('Access-Control-Allow-Origin', origin)
+  // }
 
   const { genre } = req.query // un query string es una cadena de texto que se envía en la url para filtrar datos
 
@@ -104,10 +117,10 @@ app.patch('/movies/:id', (req, res) => {
 // PUT -> Si es idempotente porque el resultado es el mismo si se hace una o varias veces
 
 app.delete('/movies/:id', (req, res) => {
-  const origin = req.headers.origin
-  if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
-    res.header('Access-Control-Allow-Origin', origin)
-  } // seguira dando error de CORS porque el metodo options no esta implementado
+  // const origin = req.headers.origin
+  // if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
+  // res.header('Access-Control-Allow-Origin', origin)
+  // } // seguira dando error de CORS porque el metodo options no esta implementado
 
   const { id } = req.params
   const movieIndex = movies.findIndex(movie => movie.id === id)
@@ -119,17 +132,17 @@ app.delete('/movies/:id', (req, res) => {
   return res.status(204).json({ message: 'Movie deleted' })
 })
 
-app.options('/movies:id', (req, res) => {
-  const origin = req.headers.origin
-  if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
-    res.header('Access-Control-Allow-Origin', origin)
-  }
+// app.options('/movies:id', (req, res) => {
+//   const origin = req.headers.origin
+//   if (ACCEPTED_ORIGINS.includes(origin) || !origin) {
+//     res.header('Access-Control-Allow-Origin', origin)
+//   }
 
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-  // res.header('Access-Control-Allow-Headers', 'Content-Type')
+//   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+//   // res.header('Access-Control-Allow-Headers', 'Content-Type')
 
-  res.status(200).send()
-})
+//   res.status(200).send()
+// })
 
 app.listen(PORT, () => {
   console.log(`Server listening on port http://localhost:${PORT}`)
