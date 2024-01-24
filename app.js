@@ -2,14 +2,26 @@
 
 // Sus principios son: escabilidad, simplicidad, portabilidad, visibilidad, fiabilidad y modificabilidad
 
-const express = require('express') // npm install express -E para que se instale la versión exacta que se tiene en package.json
-const crypto = require('node:crypto') // node:crypto es un módulo nativo de node.js para encriptar datos
-const cors = require('cors') // npm install cors -E
-const movies = require('./movies.json')
-const { validateMovie, validatePartialMovie } = require('./schemas/movies')
+import express, { json } from 'express' // npm install express -E para que se instale la versión exacta que se tiene en package.json
+import { randomUUID } from 'node:crypto' // node:crypto es un módulo nativo de node.js para encriptar datos
+import cors from 'cors' // npm install cors -E
+// import movies from './movies.json' // error porque no es valido con ecma script modules
+// import movies from './movies.json' asserts { type: 'json' } // hay que especificar que tipo de archivo es -> ESTA sintaxis cambió y ya no es valida
+// import movies from './movies.json' with { type: 'json' } // esta sintaxis es la "nueva" pero aun no es soportada por node.js (import del futuro)
+import { validateMovie, validatePartialMovie } from './schemas/movies.js'
+import { readJSON } from './utils/readJson.js'
+
+// hay dos formas de importar un archivo json:
+// 1. Usando la libreria fs (file system) de node.js
+// import fs from 'node:fs'
+
+// const movies = JSON.parse(fs.readFileSync('./movies.json', 'utf-8'))
+
+// 2. Creando un require (forma recomendada en ESModules por ahora) -> enviado a otro modulo /utils
+const movies = readJSON('./movies.json') // para JSON gigantes esta es la mejor forma de importarlos
 
 const app = express()
-app.use(express.json())
+app.use(json())
 // app.use(cors()) // WARNING -> este middleware pone un * a todos los endpoints -> no es recomendable usarlo asi
 app.use(cors({
   origin: (origin, callback) => {
@@ -80,7 +92,7 @@ app.post('/movies', (req, res) => {
   }
 
   const newMovie = {
-    id: crypto.randomUUID(), // genera un id aleatorio con la libreria crypto
+    id: randomUUID(), // genera un id aleatorio con la libreria crypto
     // ...req.body // es mala practica porque se puede enviar cualquier cosa en el body si no se tiene un schema
     ...result.data
     // title,
@@ -91,7 +103,7 @@ app.post('/movies', (req, res) => {
     // rate: rate ?? 0, // si no se envia el rate, se le asigna 0
     // poster
   }
-  movies.push(newMovie)
+  movies.atpush(newMovie)
 
   res.status(201).json(newMovie)
 }) // no es idempotente porque cada vez que se hace un post se crea un nuevo recurso
