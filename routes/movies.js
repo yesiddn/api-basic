@@ -6,6 +6,7 @@ import { MovieModel } from '../models/movie.js'
 export const moviesRouter = Router() // export nombrado (se ve mejor que el export default)
 
 moviesRouter.get('/', async (req, res) => {
+  // se puede manejar un error con try catch o con un middleware
   const { genre } = req.query
   const movies = await MovieModel.getAll({ genre })
 
