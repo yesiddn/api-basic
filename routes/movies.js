@@ -1,14 +1,20 @@
 import { Router } from 'express'
 
 import { MovieController } from '../controllers/movies.js'
+// import { MovieModel } from '../models/mysql/movie.js' // inyección de dependencias pero en el lugar incorrecto
 
-export const moviesRouter = Router() // export nombrado (se ve mejor que el export default)
+export const createMoviesRouter = ({ movieModel }) => { // export nombrado (se ve mejor que el export default)
+  const moviesRouter = Router()
 
-moviesRouter.get('/', MovieController.getAll)
-moviesRouter.post('/', MovieController.create)
+  const movieController = new MovieController({ movieModel })
 
-moviesRouter.get('/:id', MovieController.getById)
-moviesRouter.patch('/:id', MovieController.update)
-moviesRouter.delete('/:id', MovieController.delete)
+  moviesRouter.get('/', movieController.getAll)
+  moviesRouter.post('/', movieController.create)
 
+  moviesRouter.get('/:id', movieController.getById)
+  moviesRouter.patch('/:id', movieController.update)
+  moviesRouter.delete('/:id', movieController.delete)
+
+  return moviesRouter
+}
 // export default router // una forma de exportar
